@@ -1,18 +1,39 @@
 import { Request, Response } from 'express'
 import { StudentServices } from './student.service'
+import studentValidationSchema from './student.validation'
 
 // Creating students
 const createStudent = async (req: Request, res: Response) => {
   try {
+    //! creating a schema validation using Joi
+
     const { student: studentData } = req.body
-    const result = await StudentServices.createStudentIntoDB(studentData)
+
+    //! validation using Joi validator package
+    const { error, value } = studentValidationSchema.validate(studentData)
+
+    const result = await StudentServices.createStudentIntoDB(value)
+    // console.log({error}, {value})
+
+    if (error) {
+      res.status(500).json({
+        success: false,
+        message: 'Something went wrong',
+        error: error.details,
+      })
+    }
+
     res.status(200).json({
       success: true,
       message: 'Student is created Succefully',
       data: result,
     })
   } catch (err) {
-    console.log(err)
+    res.status(500).json({
+      success: false,
+      message: 'Something went wrong',
+      error: err,
+    })
   }
 }
 
@@ -49,7 +70,7 @@ const getSingleStudent = async (req: Request, res: Response) => {
 export const StudentControllers = {
   createStudent,
   getAllStudents,
-  getSingleStudent
+  getSingleStudent,
 }
 
 //** Controller function will handle only service logic (It will just take request and will send response and dont care about which database or ORM is used) */;

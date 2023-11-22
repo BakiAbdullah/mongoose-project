@@ -1,4 +1,5 @@
 import { Schema, model } from 'mongoose'
+import validator from 'validator'
 import {
   Guardian,
   LocalGuardian,
@@ -12,13 +13,28 @@ const userNameSchema = new Schema<UserName>({
   firstName: {
     type: String,
     required: [true, 'First Name is required'],
+    trim: true,
+    maxlength: [20, 'Name can not be more than 20 characters'],
+    validate: {
+      validator: function (value: string) {
+        const firstNameStr = value.charAt(0).toUpperCase() + value.slice(1)
+        return firstNameStr === value
+      },
+      message: '{VALUE} is not in capitalize format',
+    },
   },
   middleName: {
     type: String,
+    trim: true,
   },
   lastName: {
     type: String,
     required: [true, 'Last Name is required'],
+    trim: true,
+    validate: {
+      validator: (value: string) => validator.isAlpha(value),
+      message: '{VALUE} is not valid',
+    },
   },
 })
 
@@ -63,18 +79,26 @@ const localGuardianSchema = new Schema<LocalGuardian>({
 })
 
 const studentSchema = new Schema<Student>({
-  id: { type: String , required: true, unique: true},
+  id: { type: String, required: true, unique: true },
   name: { type: userNameSchema, required: true },
   gender: {
     type: String,
     enum: {
       values: ['male', 'female', 'other'],
-      message: "{VALUE} is not supported"
+      message: '{VALUE} is not supported',
     },
     required: true,
   },
   dateOfBirth: { type: String },
-  email: { type: String, required: true, unique: true },
+  email: {
+    type: String,
+    required: true,
+    unique: true,
+    validate: { validator: (value: string) => validator.isEmail(value),
+    message: '{VALUE} is not a valid email type'
+    },
+  },
+
   contactNo: { type: String, required: true },
   emergencyContactNo: { type: String, required: true },
   bloodGroup: {
