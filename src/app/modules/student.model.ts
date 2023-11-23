@@ -1,15 +1,17 @@
 import { Schema, model } from 'mongoose'
 import validator from 'validator'
 import {
-  Guardian,
-  LocalGuardian,
-  Student,
-  UserName,
+  TGuardian,
+  TLocalGuardian,
+  TStudent,
+  StudentMethods,
+  StudentModel,
+  TUserName,
 } from './student/student.interface'
 
 // 2. Create a Schema corresponding to the document interface.
 
-const userNameSchema = new Schema<UserName>({
+const userNameSchema = new Schema<TUserName>({
   firstName: {
     type: String,
     required: [true, 'First Name is required'],
@@ -38,7 +40,7 @@ const userNameSchema = new Schema<UserName>({
   },
 })
 
-const guardianSchema = new Schema<Guardian>({
+const guardianSchema = new Schema<TGuardian>({
   fatherName: {
     type: String,
     required: true,
@@ -65,7 +67,7 @@ const guardianSchema = new Schema<Guardian>({
   },
 })
 
-const localGuardianSchema = new Schema<LocalGuardian>({
+const localGuardianSchema = new Schema<TLocalGuardian>({
   name: {
     type: String,
     required: true,
@@ -78,7 +80,7 @@ const localGuardianSchema = new Schema<LocalGuardian>({
   address: { type: String, required: true },
 })
 
-const studentSchema = new Schema<Student>({
+const studentSchema = new Schema<TStudent, StudentModel>({
   id: { type: String, required: true, unique: true },
   name: { type: userNameSchema, required: true },
   gender: {
@@ -94,8 +96,9 @@ const studentSchema = new Schema<Student>({
     type: String,
     required: true,
     unique: true,
-    validate: { validator: (value: string) => validator.isEmail(value),
-    message: '{VALUE} is not a valid email type'
+    validate: {
+      validator: (value: string) => validator.isEmail(value),
+      message: '{VALUE} is not a valid email type',
     },
   },
 
@@ -117,5 +120,22 @@ const studentSchema = new Schema<Student>({
   },
 })
 
+
+//& creating a custom static method
+
+studentSchema.statics.isUserExists = async function(id: string){
+  const existingUser = await Student.findOne({id})
+  return existingUser 
+}
+
+
+
+
+//creating a custom instance method
+// studentSchema.methods.isUserExits = async function (id: string) {
+//   const existingUser = await Student.findOne({ id: id })
+//   return existingUser
+// }
+
 // 3. Create a Model.
-export const StudentModel = model<Student>('Student', studentSchema)
+export const Student = model<TStudent, StudentModel>('Student', studentSchema)
