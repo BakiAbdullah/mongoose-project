@@ -1,5 +1,5 @@
 // import { Schema, model, connect } from 'mongoose';
-import { Model } from "mongoose"
+import { Model, Types } from 'mongoose'
 
 // 1. Create a student type or interface representing a document in MongoDB.
 export type TUserName = {
@@ -17,7 +17,7 @@ export type TGuardian = {
   motherContactNo: string
 }
 
-export type TLocalGuardian ={
+export type TLocalGuardian = {
   name: string
   occupation: string
   contactNo: string
@@ -26,6 +26,7 @@ export type TLocalGuardian ={
 
 export type TStudent = {
   id: string
+  user: Types.ObjectId
   name: TUserName
   gender: 'male' | 'female' | 'other'
   dateOfBirth?: string
@@ -38,20 +39,16 @@ export type TStudent = {
   guardian: TGuardian
   localGuardian: TLocalGuardian
   profileImg?: string
-  isActive: 'active' | 'blocked'
+  isDeleted: boolean
 }
-
 
 //& for creating Static methods
 export interface StudentModel extends Model<TStudent> {
- isUserExists(id: string): Promise<TStudent | null>
+  isUserExists(id: string): Promise<TStudent | null>
 }
 
-
-
-
 //* for creating Instance methods
-// export type StudentMethods = { 
+// export type StudentMethods = {
 //   isUserExists(id: string): Promise<TStudent | null>
 // }
 

@@ -1,5 +1,4 @@
 import { Schema, model } from 'mongoose'
-import validator from 'validator'
 import {
   TGuardian,
   TLocalGuardian,
@@ -9,20 +8,12 @@ import {
 } from './student.interface'
 
 // 2. Create a Schema corresponding to the document interface.
-
 const userNameSchema = new Schema<TUserName>({
   firstName: {
     type: String,
     required: [true, 'First Name is required'],
     trim: true,
     maxlength: [20, 'Name can not be more than 20 characters'],
-    validate: {
-      validator: function (value: string) {
-        const firstNameStr = value.charAt(0).toUpperCase() + value.slice(1)
-        return firstNameStr === value
-      },
-      message: '{VALUE} is not in capitalize format',
-    },
   },
   middleName: {
     type: String,
@@ -30,22 +21,21 @@ const userNameSchema = new Schema<TUserName>({
   },
   lastName: {
     type: String,
-    required: [true, 'Last Name is required'],
     trim: true,
-    validate: {
-      validator: (value: string) => validator.isAlpha(value),
-      message: '{VALUE} is not valid',
-    },
+    required: [true, 'Last Name is required'],
+    maxlength: [20, 'Name can not be more than 20 characters'],
   },
 })
 
 const guardianSchema = new Schema<TGuardian>({
   fatherName: {
     type: String,
-    required: true,
+    trim: true,
+    required: [true, 'Father Name is required'],
   },
   fatherOcupation: {
     type: String,
+    trim: true,
     required: true,
   },
   fatherContactNo: {
@@ -80,7 +70,13 @@ const localGuardianSchema = new Schema<TLocalGuardian>({
 })
 
 const studentSchema = new Schema<TStudent, StudentModel>({
-  id: { type: String, required: true, unique: true },
+  id: { type: String, required: [true, 'Id is required'], unique: true },
+  user: {
+    type: Schema.Types.ObjectId,
+    required: [true, 'User d is required'],
+    unique: true,
+    ref: 'User',
+  },
   name: { type: userNameSchema, required: true },
   gender: {
     type: String,
@@ -93,12 +89,8 @@ const studentSchema = new Schema<TStudent, StudentModel>({
   dateOfBirth: { type: String },
   email: {
     type: String,
-    required: true,
+    required: [true, 'Email is required'],
     unique: true,
-    validate: {
-      validator: (value: string) => validator.isEmail(value),
-      message: '{VALUE} is not a valid email type',
-    },
   },
 
   contactNo: { type: String, required: true },
@@ -112,29 +104,41 @@ const studentSchema = new Schema<TStudent, StudentModel>({
   guardian: { type: guardianSchema, required: true },
   localGuardian: { type: localGuardianSchema, required: true },
   profileImg: { type: String },
-  isActive: {
-    type: String,
-    enum: ['active', 'blocked'],
-    default: 'active',
+  isDeleted: {
+    type: Boolean,
+    default: false,
   },
+}, {
+  virtuals: true
 })
 
 
+// virtual
+studentSchema.virtual('fullName').get(function () {
+  return this.name.firstName + this.name.middleName + this.name.lastName;
+});
+
+// Query Middleware
+studentSchema.pre('find', function (next) {
+  this.find({ isDeleted: { $ne: true } });
+  next();
+});
+
+studentSchema.pre('findOne', function (next) {
+  this.find({ isDeleted: { $ne: true } });
+  next();
+});
+
+studentSchema.pre('aggregate', function (next) {
+  this.pipeline().unshift({ $match: { isDeleted: { $ne: true } } });
+  next();
+});
+
 //& creating a custom static method
-
-studentSchema.statics.isUserExists = async function(id: string){
-  const existingUser = await Student.findOne({id})
-  return existingUser 
+studentSchema.statics.isUserExists = async function (id: string) {
+  const existingUser = await Student.findOne({ id })
+  return existingUser
 }
-
-
-
-
-//creating a custom instance method
-// studentSchema.methods.isUserExits = async function (id: string) {
-//   const existingUser = await Student.findOne({ id: id })
-//   return existingUser
-// }
 
 // 3. Create a Model.
 export const Student = model<TStudent, StudentModel>('Student', studentSchema)
