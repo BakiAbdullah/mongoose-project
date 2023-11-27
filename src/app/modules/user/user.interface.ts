@@ -1,3 +1,4 @@
+// Step-1 (Create Interface)
 export type TUser = {
   id: string
   password: string

@@ -4,10 +4,9 @@ import {
   TGuardian,
   TLocalGuardian,
   TStudent,
-  StudentMethods,
   StudentModel,
   TUserName,
-} from './student/student.interface'
+} from './student.interface'
 
 // 2. Create a Schema corresponding to the document interface.
 
