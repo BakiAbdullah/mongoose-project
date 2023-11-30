@@ -23,7 +23,10 @@ const createStudentIntoDB = async (password: string, payload: TStudent) => {
   )
 
   //set generated id for student
-  userData.id = generateStudentId(admissionSemester)
+  //! userData.id = await generateStudentId(admissionSemester) --> This line was Throwing error
+  if (admissionSemester) {
+    userData.id = await generateStudentId(admissionSemester)
+  }
 
   // create a user
   const newUser = await User.create(userData)
