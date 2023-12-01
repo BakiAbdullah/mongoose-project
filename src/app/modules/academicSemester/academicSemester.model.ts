@@ -5,6 +5,8 @@ import {
   AcademicSemesterName,
   Months,
 } from './academicSemester.const'
+import AppError from '../../errors/AppError'
+import httpStatus from 'http-status'
 
 // 2. Create a Schema corresponding to the Academic semester interface.
 const academicSemesterSchema = new Schema<TAcademicSemester>(
@@ -32,7 +34,7 @@ academicSemesterSchema.pre('save', async function (next) {
   })
 
   if (isSemesterExists) {
-    throw new Error(`${this.name} Semester is already exists!`)
+    throw new AppError(httpStatus.BAD_REQUEST,`${this.name} Semester is already exists!`)
   } else {
     next()
   }
