@@ -41,9 +41,10 @@ export type TStudent = {
   profileImg?: string
   admissionSemester: Types.ObjectId
   isDeleted: boolean
+  academicDepartment: Types.ObjectId
 }
 
-//& for creating Static methods
+//? for creating Static methods
 export interface StudentModel extends Model<TStudent> {
   isUserExists(id: string): Promise<TStudent | null>
 }

@@ -44,7 +44,6 @@ const updateAcademicFaculty = catchAsync(async (req, res) => {
     facultyId,
     req.body,
   )
-
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
