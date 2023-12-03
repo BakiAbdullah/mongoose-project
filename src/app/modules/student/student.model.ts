@@ -92,6 +92,7 @@ const studentSchema = new Schema<TStudent, StudentModel>(
       type: String,
       required: [true, 'Email is required'],
       unique: true,
+      lowercase: true
     },
 
     contactNo: { type: String, required: true },
