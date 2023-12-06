@@ -34,7 +34,10 @@ academicSemesterSchema.pre('save', async function (next) {
   })
 
   if (isSemesterExists) {
-    throw new AppError(httpStatus.BAD_REQUEST,`${this.name} Semester is already exists!`)
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      `${this.name} Semester is already exists!`,
+    )
   } else {
     next()
   }

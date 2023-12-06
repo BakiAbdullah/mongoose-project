@@ -1,4 +1,4 @@
-import { AnyZodObject } from "zod"
+import { AnyZodObject } from 'zod'
 import { NextFunction, Request, Response } from 'express'
 
 // Higher Order Functions

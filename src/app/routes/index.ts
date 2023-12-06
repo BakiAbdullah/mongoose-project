@@ -18,16 +18,16 @@ const moduleRoutes = [
   },
   {
     path: '/academic-semester',
-    route: AcademicSemesterRoutes
+    route: AcademicSemesterRoutes,
   },
   {
     path: '/academic-faculties',
-    route: AcademicFacultyRoutes
+    route: AcademicFacultyRoutes,
   },
   {
     path: '/academic-departments',
-    route: AcademicDeparmentRoutes
-  }
+    route: AcademicDeparmentRoutes,
+  },
 ]
 
 moduleRoutes.forEach((route) => globalRouter?.use(route?.path, route?.route))

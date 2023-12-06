@@ -23,9 +23,9 @@ const updateAcademicSemesterValidationSchema = z.object({
     startMonth: z.enum([...Months] as [string, ...string[]]).optional(),
     endMonth: z.enum([...Months] as [string, ...string[]]).optional(),
   }),
-});
+})
 
 export const AcademicSemesterValidations = {
   createAcademicSemesterValidationSchema,
-  updateAcademicSemesterValidationSchema
+  updateAcademicSemesterValidationSchema,
 }

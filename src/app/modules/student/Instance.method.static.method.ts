@@ -1,4 +1,4 @@
-import { StudentModel } from "../student.model"
+import { StudentModel } from '../student.model'
 
 // Counter class
 class Counter {
@@ -18,7 +18,6 @@ const counter1 = new Counter()
 counter1.increment() // instance method
 counter1.decrement() // instance method
 
-
 //& *** Static method ******************************************* /
 //& *** Static method ******************************************* /
 class staticCounter {
@@ -36,8 +35,6 @@ class staticCounter {
 // By using static methods, no need to create a new instance
 staticCounter.increment() // static method
 staticCounter.decrement() // static method
-
-
 
 //! Mongoose Built-in Methods ****************************************************************
 StudentModel.create() //built in static method

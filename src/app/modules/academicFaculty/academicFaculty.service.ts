@@ -21,7 +21,8 @@ const updateAcademicFacultyIntoDB = async (
   payload: Partial<TAcademicFaculty>,
 ) => {
   const result = await AcademicFacultyModel.findOneAndUpdate(
-    { _id: id },payload,
+    { _id: id },
+    payload,
     {
       new: true,
     },
@@ -33,5 +34,5 @@ export const academicFacultyServices = {
   createAcademicFacultyIntoDB,
   getAllAcademicFacultiesFromDB,
   getSingleAcademicFacultyFromDB,
-  updateAcademicFacultyIntoDB
+  updateAcademicFacultyIntoDB,
 }

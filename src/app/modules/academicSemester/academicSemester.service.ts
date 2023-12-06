@@ -9,7 +9,7 @@ const createAcademicSemesterIntoDB = async (payload: TAcademicSemester) => {
 
   // academicSemesterNameCodeMapper['Fall'] = '03'
   if (academicSemesterNameCodeMapper[payload.name] !== payload.code) {
-    throw new AppError(httpStatus.NOT_ACCEPTABLE,'Invalid Semester Code!')
+    throw new AppError(httpStatus.NOT_ACCEPTABLE, 'Invalid Semester Code!')
   }
   const result = await AcademicSemesterModel.create(payload)
   return result
@@ -34,7 +34,7 @@ const updateAcademicSemesterIntoDB = async (
     payload.code &&
     academicSemesterNameCodeMapper[payload.name] !== payload.code
   ) {
-    throw new AppError(httpStatus.NOT_ACCEPTABLE,'Invalid Semester Code')
+    throw new AppError(httpStatus.NOT_ACCEPTABLE, 'Invalid Semester Code')
   }
 
   const result = await AcademicSemesterModel.findOneAndUpdate(
@@ -51,5 +51,5 @@ export const AcademicSemesterServices = {
   createAcademicSemesterIntoDB,
   getAllAcademicSemestersFromDB,
   getSingleAcademicSemesterFromDB,
-  updateAcademicSemesterIntoDB
+  updateAcademicSemesterIntoDB,
 }

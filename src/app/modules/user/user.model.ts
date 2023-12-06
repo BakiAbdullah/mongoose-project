@@ -1,7 +1,7 @@
 import { Schema, model } from 'mongoose'
 import { TUser } from './user.interface'
 import bcrypt from 'bcrypt'
-import config from '../../config';
+import config from '../../config'
 
 // Step-2 (Create Schema)
 const userSchema = new Schema<TUser>(
@@ -9,7 +9,7 @@ const userSchema = new Schema<TUser>(
     id: {
       type: String,
       required: true,
-      unique: true
+      unique: true,
     },
     password: {
       type: String,
@@ -38,19 +38,19 @@ const userSchema = new Schema<TUser>(
 
 userSchema.pre('save', async function (next) {
   // eslint-disable-next-line @typescript-eslint/no-this-alias
-  const user = this; // doc
+  const user = this // doc
   // hashing password and save into DB
   user.password = await bcrypt.hash(
     user.password,
     Number(config.bcrypt_salt_rounds),
-  );
-  next();
-});
+  )
+  next()
+})
 
 // set '' after saving password
 userSchema.post('save', function (doc, next) {
-  doc.password = '';
-  next();
-});
+  doc.password = ''
+  next()
+})
 // Step-3 (Create Model)
 export const User = model<TUser>('User', userSchema)
