@@ -4,6 +4,8 @@ import { TErrorSources } from '../interface/error'
 import config from '../config'
 import handleZodErr from '../errors/handleZodError'
 import handleValidationError from '../errors/handleValidationError'
+import handleCastError from '../errors/handleCastError'
+import handleDuplicateError from '../errors/handleDuplicateError'
 
 const globalErrorHandler: ErrorRequestHandler = (err, req, res, next) => {
   // Setting default values
@@ -27,6 +29,16 @@ const globalErrorHandler: ErrorRequestHandler = (err, req, res, next) => {
     statusCode = simplifiedError?.statusCode
     message = simplifiedError?.message
     errorSources = simplifiedError?.errorSources
+  } else if (err?.name === 'CastError') {
+    const simplifiedError = handleCastError(err)
+    statusCode = simplifiedError?.statusCode
+    message = simplifiedError?.message
+    errorSources = simplifiedError?.errorSources
+  } else if (err?.code === 1100) {
+    const simplifiedError = handleDuplicateError(err)
+    statusCode = simplifiedError?.statusCode
+    message = simplifiedError?.message
+    errorSources = simplifiedError?.errorSources
   }
 
   // Ultimate return of our custom error
@@ -34,6 +46,7 @@ const globalErrorHandler: ErrorRequestHandler = (err, req, res, next) => {
     success: false,
     message: message,
     errorSources,
+    err,
     stack: config.NODE_ENV === 'development' ? err?.stack : null,
   })
 }
@@ -41,11 +54,11 @@ const globalErrorHandler: ErrorRequestHandler = (err, req, res, next) => {
 export default globalErrorHandler
 
 //? Our custom ErrorPattern
-/**
+/*
  * Success:
  * message:
-   errorSources: [
-    path: '',
-    message: 'Something went wrong',
-  ]
+ * errorSources: [
+ *    path: '',
+ *    message: 'Something went wrong',
+ * ]
  */
