@@ -5,79 +5,102 @@ import { Student } from './student.model'
 import AppError from '../../errors/AppError'
 import httpStatus from 'http-status'
 import { studentSearchableFields } from './student.constant'
+import QueryBuilder from '../../builder/QueryBuilder'
 
 const getAllStudentsFromDB = async (query: Record<string, unknown>) => {
-  // {email: { $regex: query.searchTerm, $options: i}}
-  // {presentAddress: { $regex: query.searchTerm, $options: i}}
-  const queryObj = { ...query } // copy of query object
+  // const queryObj = { ...query } // copy of query object
+  //! {email: { $regex: query.searchTerm, $options: i}}
 
-  let searchTerm = ''
+  // let searchTerm = ''
 
-  if (query?.searchTerm) {
-    searchTerm = query?.searchTerm as string
-  }
+  // if (query?.searchTerm) {
+  //   searchTerm = query?.searchTerm as string
+  // }
 
-  const searchQuery = Student.find({
-    $or: studentSearchableFields.map((field) => ({
-      [field]: { $regex: searchTerm, $options: 'i' },
-    })),
-  })
+  //? Main query
+  // const searchQuery = Student.find({
+  //   $or: studentSearchableFields.map((field) => ({
+  //     [field]: { $regex: searchTerm, $options: 'i' },
+  //   })),
+  // })
 
-  // Filtering
-  const excludeFields = ['searchTerm', 'sort', 'limit', 'page', 'fields']
+  //? Filtering
+  // const excludeFields = ['searchTerm', 'sort', 'limit', 'page', 'fields']
 
-  excludeFields.forEach((el) => delete queryObj[el])
-  console.log({ query }, { queryObj })
-  const filterQuery = searchQuery
-    .find(queryObj)
-    .populate('admissionSemester')
-    .populate({
-      path: 'academicDepartment',
-      populate: {
-        path: 'academicFaculty',
-      },
-    })
+  // excludeFields.forEach((el) => delete queryObj[el])
 
-  let sort = '-createdAt'
+  // const filterQuery = searchQuery
+  //   .find(queryObj)
+  //   .populate('admissionSemester')
+  //   .populate({
+  //     path: 'academicDepartment',
+  //     populate: {
+  //       path: 'academicFaculty',
+  //     },
+  //   })
 
-  if (query.sort) {
-    sort = query.sort as string
-  }
+  //? Sorting
+  // let sort = '-createdAt'
+  // if (query.sort) {
+  //   sort = query.sort as string
+  // }
 
-  const sortQuery = filterQuery.sort(sort)
+  // const sortQuery = filterQuery.sort(sort)
 
-  let page = 1
-  let limit = 1
-  let skip = 0
-  if (query.limit) {
-    limit = Number(query.limit)
-  }
-  if (query.page) {
-    page = Number(query.page)
-    skip = (page - 1) * limit
-  }
+  // let page = 1
+  // let limit = 1
+  // let skip = 0
+  // if (query.limit) {
+  //   limit = Number(query.limit)
+  // }
+  // if (query.page) {
+  //   page = Number(query.page)
+  //   skip = (page - 1) * limit
+  // }
 
-  const paginateQuery = sortQuery.skip(skip)
+  // const paginateQuery = sortQuery.skip(skip)
 
-  const limitQuery = paginateQuery.limit(limit)
+  // const limitQuery = paginateQuery.limit(limit)
 
-  //field limiting
-  //? { query: { fields: 'name,email' } } { queryObj: { fields: 'name,email' } }
+  //? field limiting
+  // { query: { fields: 'name,email' } } { queryObj: { fields: 'name,email' } }
 
-  let fields = '-__v'
+  // let fields = '-__v'
 
-  if (fields) {
-    fields = (query.fields as string).split(',').join(' ')
-    console.log({fields})
-  }
+  // if (fields) {
+  //   fields = (query.fields as string).split(',').join(' ')
+  //   console.log({fields})
+  // }
 
-  const fieldQuery = await limitQuery.select(fields)
+  // const fieldQuery = await limitQuery.select(fields)
 
-  return fieldQuery
+  // return fieldQuery
+
+  //? Now that we have a QueryBuilder class, we can use it here
+
+  const studentQuery = new QueryBuilder(
+    Student.find()
+      .populate('admissionSemester')
+      .populate({
+        path: 'academicDepartment',
+        populate: {
+          path: 'academicFaculty',
+        },
+      }),
+    query,
+  )
+    .search(studentSearchableFields)
+    .filter()
+    .sort()
+    .paginate()
+    .fields()
+
+  const result = await studentQuery.modelQuery
+  return result
 }
 
 const getSingleStudentFromDB = async (id: string) => {
-  const result = await Student.findOne({ id: id })
+  const result = await Student.findById(id)
     .populate('admissionSemester')
     .populate({
       path: 'academicDepartment',
@@ -99,9 +122,7 @@ const updateStudentIntoDB = async (id: string, payload: Partial<TStudent>) => {
     guardain: {
       fatherOccupation:"Teacher"
     }
-
     guardian.fatherOccupation = Teacher
-
     name.firstName = 'Mezba'
     name.lastName = 'Abedin'
   */
@@ -126,7 +147,7 @@ const updateStudentIntoDB = async (id: string, payload: Partial<TStudent>) => {
 
   console.log(modifiedUpdatedData)
 
-  const result = await Student.findOneAndUpdate({ id }, modifiedUpdatedData, {
+  const result = await Student.findByIdAndUpdate(id, modifiedUpdatedData, {
     new: true,
     runValidators: true,
   })
@@ -139,8 +160,8 @@ const deleteStudentFromDB = async (id: string) => {
   try {
     session.startTransaction()
 
-    const deletedStudent = await Student.findOneAndUpdate(
-      { id },
+    const deletedStudent = await Student.findByIdAndUpdate(
+      id,
       { isDeleted: true },
       { new: true, session },
     )
@@ -149,7 +170,10 @@ const deleteStudentFromDB = async (id: string) => {
       throw new AppError(httpStatus.BAD_REQUEST, 'Failed to delete student')
     }
 
-    const deletedUser = await User.findOneAndUpdate(
+     // get user _id from deletedStudent
+    const userId = deletedStudent.user;
+
+    const deletedUser = await User.findByIdAndUpdate(
       { id },
       { isDeleted: true },
       { new: true, session },
