@@ -3,11 +3,8 @@ import { catchAsync } from '../../utils/catchAsync'
 import sendResponse from '../../utils/sendResponse'
 import { CourseServices } from './course.service'
 
-
 const createCourse = catchAsync(async (req, res) => {
-  const CourseData = req.body
-  const result =
-    await CourseServices.createCourseIntoDB(CourseData)
+  const result = await CourseServices.createCourseIntoDB(req.body)
 
   sendResponse(res, {
     statusCode: httpStatus.OK,
@@ -29,8 +26,7 @@ const getAllCourses = catchAsync(async (req, res) => {
 
 const getSingleCourse = catchAsync(async (req, res) => {
   const { id } = req.params
-  const result =
-    await CourseServices.getSingleCourseFromDB(id)
+  const result = await CourseServices.getSingleCourseFromDB(id)
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
@@ -40,8 +36,7 @@ const getSingleCourse = catchAsync(async (req, res) => {
 })
 const deleteCourse = catchAsync(async (req, res) => {
   const { id } = req.params
-  const result =
-    await CourseServices.deleteCourseFromDB(id)
+  const result = await CourseServices.deleteCourseFromDB(id)
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
@@ -50,23 +45,24 @@ const deleteCourse = catchAsync(async (req, res) => {
   })
 })
 
-// const updateAcademicFaculty = catchAsync(async (req, res) => {
-//   const { facultyId } = req.params
-//   const result = await academicFacultyServices.updateAcademicFacultyIntoDB(
-//     facultyId,
-//     req.body,
-//   )
-//   sendResponse(res, {
-//     statusCode: httpStatus.OK,
-//     success: true,
-//     message: 'Academic Faculty is updated succesfully',
-//     data: result,
-//   })
-// })
+const updateCourse = catchAsync(async (req, res) => {
+  const {  id } = req.params
+  const result = await CourseServices.updateCourseIntoDB(
+    id,
+    req.body,
+  )
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Course is updated successfully',
+    data: result,
+  })
+})
 
 export const CourseControllers = {
-createCourse,
-getAllCourses,
-getSingleCourse,
-deleteCourse
+  createCourse,
+  getAllCourses,
+  getSingleCourse,
+  deleteCourse,
+  updateCourse
 }
