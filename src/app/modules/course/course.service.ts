@@ -2,8 +2,8 @@ import httpStatus from 'http-status'
 import QueryBuilder from '../../builder/QueryBuilder'
 import AppError from '../../errors/AppError'
 import { CourseSearchableFields } from './course.constant'
-import { TCourse } from './course.interface'
-import { Course } from './course.model'
+import { TCourse, TCoursefaculty } from './course.interface'
+import { Course, CourseFaculty } from './course.model'
 import mongoose from 'mongoose'
 
 const createCourseIntoDB = async (payload: TCourse) => {
@@ -27,6 +27,15 @@ const getAllCoursesFromDB = async (query: Record<string, unknown>) => {
 const getSingleCourseFromDB = async (id: string) => {
   const result = await Course.findById(id).populate(
     'preRequisiteCourses.course',
+  )
+  return result
+}
+
+const deleteCourseFromDB = async (id: string) => {
+  const result = await Course.findByIdAndUpdate(
+    id,
+    { isDeleted: true },
+    { new: true },
   )
   return result
 }
@@ -117,11 +126,36 @@ const updateCourseIntoDB = async (id: string, payload: Partial<TCourse>) => {
   }
 }
 
-const deleteCourseFromDB = async (id: string) => {
-  const result = await Course.findByIdAndUpdate(
+const assignFacultiesWithCourseIntoDB = async (
+  id: string,
+  payload: Partial<TCoursefaculty>,
+) => {
+  const result = await CourseFaculty.findByIdAndUpdate(
     id,
-    { isDeleted: true },
-    { new: true },
+    {
+      course: id,
+      $addToSet: { faculties: { $each: payload } },
+    },
+    {
+      upsert: true,
+      new: true,
+    },
+  )
+  return result
+}
+const removeFacultiesWithCourseIntoDB = async (
+  id: string,
+  payload: Partial<TCoursefaculty>,
+) => {
+  const result = await CourseFaculty.findByIdAndUpdate(
+    id,
+    {
+      $pull: { faculties: { $in: payload } },
+      // pull faculties in payload
+    },
+    {
+      new: true,
+    },
   )
   return result
 }
@@ -132,4 +166,6 @@ export const CourseServices = {
   getSingleCourseFromDB,
   deleteCourseFromDB,
   updateCourseIntoDB,
+  assignFacultiesWithCourseIntoDB,
+  removeFacultiesWithCourseIntoDB,
 }
