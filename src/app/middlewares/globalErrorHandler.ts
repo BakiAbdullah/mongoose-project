@@ -9,7 +9,7 @@ import handleDuplicateError from '../errors/handleDuplicateError'
 import AppError from '../errors/AppError'
 import { Error } from 'mongoose'
 
-const globalErrorHandler: ErrorRequestHandler = (err, req, res, next) => {
+const globalErrorHandler: ErrorRequestHandler = (err, req, res, next) => {  
   // Setting default values
   let statusCode = 500
   let message = 'Something went wrong!'
