@@ -10,7 +10,6 @@ import { CourseRoutes } from '../modules/course/course.routes'
 import { semesterRegistrationRoutes } from '../modules/semesterRegistration/semesterRegistration.routes'
 import { offeredCourseRoutes } from '../modules/OfferedCourse/OfferedCourse.routes'
 
-
 const globalRouter = Router()
 
 const moduleRoutes = [
@@ -50,7 +49,7 @@ const moduleRoutes = [
     path: '/semester-registrations',
     route: semesterRegistrationRoutes,
   },
-    {
+  {
     path: '/offered-courses',
     route: offeredCourseRoutes,
   },
