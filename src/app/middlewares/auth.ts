@@ -11,15 +11,13 @@ const auth = (...requiredRoles: TUserRole[]) => {
   return catchAsync(async (req: Request, res: Response, next: NextFunction) => {
     const token = req.headers.authorization
 
-    console.log({ token })
-
     // checking if the token is missing
     if (!token) {
       throw new AppError(httpStatus.UNAUTHORIZED, 'You are not authorized!')
     }
 
     // checking if the given token is valid
-    const decoded = jwt.verify( 
+    const decoded = jwt.verify(
       token,
       config.jwt_access_secret as string,
     ) as JwtPayload
@@ -47,21 +45,25 @@ const auth = (...requiredRoles: TUserRole[]) => {
     const userStatus = user?.status
 
     if (userStatus === 'blocked') {
-      throw new AppError(httpStatus.FORBIDDEN, 'This user is blocked ! !')
+      throw new AppError(httpStatus.FORBIDDEN, 'This user is blocked !!')
     }
 
-    // if (
-    //   user.passwordChangedAt &&
-    //   User.isJWTIssuedBeforePasswordChanged(
-    //     user.passwordChangedAt,
-    //     iat as number,
-    //   )
-    // ) {
-    //   throw new AppError(httpStatus.UNAUTHORIZED, 'You are not authorized !');
-    // }
+    //! problem resolved using await ------->
+    const hasPassChangedBeforeTokenIssue =
+      await User.isJWTIssuedBeforePasswordChanged(
+        user.passwordChangedAt as Date,
+        iat as number,
+      )
+    console.log(hasPassChangedBeforeTokenIssue)
+    if (user.passwordChangedAt && hasPassChangedBeforeTokenIssue) {
+      throw new AppError(
+        httpStatus.UNAUTHORIZED,
+        'You are not authorized, your password has changed !',
+      )
+    }
 
     if (requiredRoles && !requiredRoles.includes(role)) {
-      throw new AppError(httpStatus.UNAUTHORIZED, 'You are not authorized  hi!')
+      throw new AppError(httpStatus.UNAUTHORIZED, 'You are not authorized hi!')
     }
 
     req.user = decoded as JwtPayload
