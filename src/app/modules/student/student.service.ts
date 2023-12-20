@@ -80,6 +80,7 @@ const getAllStudentsFromDB = async (query: Record<string, unknown>) => {
 
   const studentQuery = new QueryBuilder(
     Student.find()
+      .populate('user')
       .populate('admissionSemester')
       .populate({
         path: 'academicDepartment',
@@ -170,8 +171,8 @@ const deleteStudentFromDB = async (id: string) => {
       throw new AppError(httpStatus.BAD_REQUEST, 'Failed to delete student')
     }
 
-     // get user _id from deletedStudent
-    const userId = deletedStudent.user;
+    // get user _id from deletedStudent
+    const userId = deletedStudent.user
 
     const deletedUser = await User.findByIdAndUpdate(
       { id },
