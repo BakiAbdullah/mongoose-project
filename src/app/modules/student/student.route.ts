@@ -8,7 +8,11 @@ const router = express.Router()
 
 // route will call controller functions
 router.get('/', StudentControllers.getAllStudents)
-router.get('/:id', auth('admin', 'faculty'), StudentControllers.getSingleStudent)
+router.get(
+  '/:id',
+  auth('admin', 'faculty'),
+  StudentControllers.getSingleStudent,
+)
 router.patch(
   '/:id',
   validateRequest(updateStudentValidationSchema),
