@@ -4,6 +4,7 @@ import { USER_ROLE } from './user.constant'
 // Step-1 (Create Interface)
 export interface TUser {
   id: string
+  email: string
   password: string
   needsPasswordChange: boolean
   passwordChangedAt?: Date
