@@ -22,7 +22,11 @@ import { verifyToken } from '../Auth/auth.utils'
 import { sendImageToCloudinary } from '../../utils/sendImageToCloudinary'
 
 // Service function will handle only Business logic */
-const createStudentIntoDB = async (password: string, payload: TStudent) => {
+const createStudentIntoDB = async (
+  file: any,
+  password: string,
+  payload: TStudent,
+) => {
   // Create a user object and set student role
   const userData: Partial<TUser> = {}
 
@@ -48,9 +52,14 @@ const createStudentIntoDB = async (password: string, payload: TStudent) => {
       userData.id = await generateStudentId(admissionSemester)
     }
 
+    //? Custom mixed image name
+    const imageName = `${userData.id}${payload?.name?.firstName}`
 
-    //send image to cloudinary
-    sendImageToCloudinary()
+    //? path for image
+    const path = file?.path
+
+    //?send image to cloudinary
+    const {secure_url} =  await sendImageToCloudinary(imageName, path)
 
     //* create a user // (Transaction-1)
     const newUser = await User.create([userData], { session }) //! Transaction use krar jnno newUser akhn Array hobe
@@ -62,6 +71,7 @@ const createStudentIntoDB = async (password: string, payload: TStudent) => {
     //set id, _id as user
     payload.id = newUser[0].id
     payload.user = newUser[0]._id //? reference _id
+    payload.profileImg = secure_url
 
     //* create a student // (Transaction-2)
     const newStudent = await Student.create([payload], { session })

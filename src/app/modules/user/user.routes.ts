@@ -14,8 +14,12 @@ const router = express.Router()
 router.post(
   '/create-student',
   auth(USER_ROLE.admin),
-  upload.single('file'),
-  // validateRequest(createStudentValidationSchema),
+  upload.single('file'), //*** parsing data using multer pack ***
+  (req: Request, res: Response, next: NextFunction) => {
+    req.body = JSON.parse(req.body.data)
+    next()
+  },
+  validateRequest(createStudentValidationSchema),
   UserControllers.createStudent,
 )
 
@@ -37,7 +41,7 @@ router.post(
   auth('admin'),
   validateRequest(UserValidation.changeStatusValidationSchema),
   UserControllers.changeStatus,
-);
+)
 
 router.get(
   '/me',
