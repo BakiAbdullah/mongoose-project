@@ -6,19 +6,17 @@ import AppError from '../../errors/AppError'
 
 // Creating students
 const createStudent = catchAsync(async (req, res) => {
-  const { password, student: studentData } = req.body
+  console.log('file=================', req.file)
+  console.log('data-----------------', JSON.parse(req.body.data))
 
-  const result = await UserServices.createStudentIntoDB(password, studentData)
-  // res.status(200).json({
-  //   success: true,
-  //   message: 'Student is created Succefully',
-  //   data: result,
-  // })
+  // const { password, student: studentData } = req.body
+  // const result = await UserServices.createStudentIntoDB(password, studentData)
+
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
     message: 'Student is created Succefully',
-    data: result,
+    data: null,
   })
 })
 
@@ -67,7 +65,7 @@ const getMe = catchAsync(async (req, res) => {
 })
 
 const changeStatus = catchAsync(async (req, res) => {
-  const id  = req.params.id
+  const id = req.params.id
   const result = await UserServices.changeStatus(id, req.body)
 
   sendResponse(res, {

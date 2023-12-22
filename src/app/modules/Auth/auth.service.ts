@@ -207,7 +207,6 @@ const resetPassword = async (
   payload: { id: string; newPassword: string },
   token: string,
 ) => {
-  console.log({ token })
   // checking if the user is exist
   const user = await User.isUserExistsByCustomId(payload?.id)
   if (!user) {
@@ -232,8 +231,6 @@ const resetPassword = async (
   //   config.jwt_access_secret as string,
   // ) as JwtPayload
   const decoded = verifyToken(token, config.jwt_access_secret as string)
-
-  console.log(decoded.iat)
 
   if (payload?.id !== decoded?.userId) {
     throw new AppError(httpStatus.FORBIDDEN, 'You are forbidden!')

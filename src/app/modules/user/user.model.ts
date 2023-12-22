@@ -80,7 +80,6 @@ userSchema.statics.isJWTIssuedBeforePasswordChanged = async function (
 ) {
   const passwordChangedTime =
     new Date(passwordChangedTimestamp).getTime() / 1000
-  console.log(passwordChangedTime > jwtIssuedTimestamp)
   return passwordChangedTime > jwtIssuedTimestamp
 }
 

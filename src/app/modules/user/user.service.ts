@@ -19,6 +19,7 @@ import { AcademicDepartmentModel } from '../academicDepartment/academicDepartmen
 import { TAdmin } from '../Admin/admin.interface'
 import { Admin } from '../Admin/admin.model'
 import { verifyToken } from '../Auth/auth.utils'
+import { sendImageToCloudinary } from '../../utils/sendImageToCloudinary'
 
 // Service function will handle only Business logic */
 const createStudentIntoDB = async (password: string, payload: TStudent) => {
@@ -46,6 +47,10 @@ const createStudentIntoDB = async (password: string, payload: TStudent) => {
     if (admissionSemester) {
       userData.id = await generateStudentId(admissionSemester)
     }
+
+
+    //send image to cloudinary
+    sendImageToCloudinary()
 
     //* create a user // (Transaction-1)
     const newUser = await User.create([userData], { session }) //! Transaction use krar jnno newUser akhn Array hobe

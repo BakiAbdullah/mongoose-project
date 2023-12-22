@@ -22,10 +22,9 @@ const auth = (...requiredRoles: TUserRole[]) => {
       config.jwt_access_secret as string,
     ) as JwtPayload
 
-    console.log({ decoded })
+   
 
     const { role, userId, iat } = decoded
-    console.log({ role })
 
     // checking if the user is exist
     const user = await User.isUserExistsByCustomId(userId)
@@ -54,7 +53,7 @@ const auth = (...requiredRoles: TUserRole[]) => {
         user.passwordChangedAt as Date,
         iat as number,
       )
-    console.log(hasPassChangedBeforeTokenIssue)
+    // console.log(hasPassChangedBeforeTokenIssue)
     if (user.passwordChangedAt && hasPassChangedBeforeTokenIssue) {
       throw new AppError(
         httpStatus.UNAUTHORIZED,
