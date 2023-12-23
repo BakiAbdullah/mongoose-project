@@ -41,7 +41,8 @@ class QueryBuilder<T> {
 
   // Sort method using OOP
   sort() {
-    const sort = (this?.query.sort as string)?.split(',')?.join(' ') || '-createdAt'
+    const sort =
+      (this?.query.sort as string)?.split(',')?.join(' ') || '-createdAt'
     this.modelQuery = this.modelQuery.sort(sort as string)
 
     return this
@@ -66,6 +67,18 @@ class QueryBuilder<T> {
     this.modelQuery = this.modelQuery.select(fields)
 
     return this
+  }
+
+  // new Query upgrade fn()
+  async countTotal() {
+    const totalQueries = this.modelQuery.getFilter()
+
+    const total = await this.modelQuery.model.countDocuments(totalQueries)
+    const page = Number(this?.query?.page) || 1
+    const limit = Number(this?.query?.limit) || 1
+    const totalPage = Math.ceil(total / limit)
+
+    return { total, page, limit, totalPage }
   }
 }
 
