@@ -4,7 +4,7 @@ export const calculateGradeAndPoints = (totalMarks: number) => {
     gradePoints: 0,
   };
 
-  /**
+  /** ranges ===>
    * 0-19 F
    * 20-39 D
    * 40-59 C
