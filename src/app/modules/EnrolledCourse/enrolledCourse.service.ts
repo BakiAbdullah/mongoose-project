@@ -6,6 +6,8 @@ import { TEnrolledCourse } from './enrolledCourse.interface'
 import { OfferedCourseModel } from '../OfferedCourse/OfferedCourse.model'
 import { Student } from '../student/student.model'
 import mongoose from 'mongoose'
+import { SemesterRegistrationModel } from '../semesterRegistration/semesterRegistration.model'
+import { Course } from '../course/course.model'
 
 const createEnrolledCourseIntoDB = async (
   userId: string,
@@ -20,6 +22,7 @@ const createEnrolledCourseIntoDB = async (
 
   // Check if the offered cousres is exists
   const { offeredCourse } = payload
+
   const isOfferedCourseExists = await OfferedCourseModel.findById(offeredCourse)
   if (!isOfferedCourseExists) {
     throw new AppError(httpStatus.NOT_FOUND, 'Offered course not found !')
@@ -34,7 +37,7 @@ const createEnrolledCourseIntoDB = async (
   }
 
   // Check if the student is already enrolled
-  const student = await Student.findOne({ id: userId }).select('id')
+  const student = await Student.findOne({ id: userId }, { _id: 1 }) // <--- field filtering / select
   if (!student) {
     throw new AppError(httpStatus.NOT_FOUND, 'Student not found !')
   }
@@ -48,7 +51,62 @@ const createEnrolledCourseIntoDB = async (
     throw new AppError(httpStatus.CONFLICT, 'Student is already enrolled !')
   }
 
-  //** Starting transaction and Rollback here because of more write operations
+  // check total credits exceeds maxCredit or not
+  const course = await Course.findById(isOfferedCourseExists?.course)
+  const currentCredit = course?.credits
+
+  const semesterRegistrationsCredits = await SemesterRegistrationModel.findById(
+    isOfferedCourseExists.semesterRegistration,
+  ).select('maxCredit')
+  const maxCredit = semesterRegistrationsCredits?.maxCredit
+
+  const enrolledCourses = await EnrolledCourse.aggregate([
+    // stage-1
+    {
+      $match: {
+        semesterRegistration: isOfferedCourseExists?.semesterRegistration,
+        student: student._id,
+      },
+    },
+    // stage-2
+    {
+      $lookup: {
+        from: 'courses',
+        localField: 'course',
+        foreignField: '_id',
+        as: 'enrolledCourseData',
+      },
+    },
+    // stage-3
+    {
+      $unwind: '$enrolledCourseData',
+    },
+    {
+      $group: {
+        _id: null,
+        totalEnrolledCredits: { $sum: '$enrolledCourseData.credits' },
+      },
+    },
+    {
+      $project: {
+        _id: 0,
+        totalEnrolledCredits: 1,
+      },
+    },
+  ])
+
+  //! total enrolled credits + new enrolled course credit > maxCredit
+  const totalCredits =
+    enrolledCourses.length > 0 ? enrolledCourses[0].totalEnrolledCredits : 0
+
+  if (totalCredits && maxCredit && totalCredits + currentCredit > maxCredit) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'You have exceeded maximum number of credits !',
+    )
+  }
+
+  //** Starting transaction and Rollback here because of many write operations
   const session = await mongoose.startSession()
   try {
     session.startTransaction()
@@ -87,56 +145,7 @@ const createEnrolledCourseIntoDB = async (
     await session.endSession()
     throw new Error(err)
   }
-
-  // const course = await Course.findById(isOfferedCourseExists.course);
-  // const currentCredit = course?.credits;
-  // const semesterRegistration = await SemesterRegistration.findById(
-  //   isOfferedCourseExists.semesterRegistration,
-  // ).select('maxCredit');
-  // const maxCredit = semesterRegistration?.maxCredit;
-  // const enrolledCourses = await EnrolledCourse.aggregate([
-  //   {
-  //     $match: {
-  //       semesterRegistration: isOfferedCourseExists.semesterRegistration,
-  //       student: student._id,
-  //     },
-  //   },
-  //   {
-  //     $lookup: {
-  //       from: 'courses',
-  //       localField: 'course',
-  //       foreignField: '_id',
-  //       as: 'enrolledCourseData',
-  //     },
-  //   },
-  //   {
-  //     $unwind: '$enrolledCourseData',
-  //   },
-  //   {
-  //     $group: {
-  //       _id: null,
-  //       totalEnrolledCredits: { $sum: '$enrolledCourseData.credits' },
-  //     },
-  //   },
-  //   {
-  //     $project: {
-  //       _id: 0,
-  //       totalEnrolledCredits: 1,
-  //     },
-  //   },
-  // ]);
-  // //  total enrolled credits + new enrolled course credit > maxCredit
-  // const totalCredits =
-  //   enrolledCourses.length > 0 ? enrolledCourses[0].totalEnrolledCredits : 0;
-  // if (totalCredits && maxCredit && totalCredits + currentCredit > maxCredit) {
-  //   throw new AppError(
-  //     httpStatus.BAD_REQUEST,
-  //     'You have exceeded maximum number of credits !',
-  //   );
-  // }
-  
 }
-
 
 // const updateEnrolledCourseMarksIntoDB = async (
 //   facultyId: string,
