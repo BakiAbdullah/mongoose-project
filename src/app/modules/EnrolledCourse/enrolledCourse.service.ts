@@ -83,12 +83,14 @@ const createEnrolledCourseIntoDB = async (
     {
       $unwind: '$enrolledCourseData',
     },
+    // stage-4
     {
       $group: {
         _id: null,
         totalEnrolledCredits: { $sum: '$enrolledCourseData.credits' },
       },
     },
+    // stage-5
     {
       $project: {
         _id: 0,

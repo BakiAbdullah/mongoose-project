@@ -2,6 +2,7 @@ import express from 'express'
 import { AcademicSemesterControllers } from './academicSemester.controller'
 import validateRequest from '../../middlewares/validateRequest'
 import { AcademicSemesterValidations } from './academicSemester.validation'
+import auth from '../../middlewares/auth'
 
 const router = express.Router()
 // Route will call controller functions
@@ -26,6 +27,10 @@ router.patch(
   AcademicSemesterControllers.updateAcademicSemester,
 )
 
-router.get('/', AcademicSemesterControllers.getAllAcademicSemesters)
+router.get(
+  '/',
+  auth('admin'),
+  AcademicSemesterControllers.getAllAcademicSemesters,
+)
 
 export const AcademicSemesterRoutes = router
